@@ -1,0 +1,51 @@
+---
+- name: Ensure yum-transport / dependencies (CentOS/RHEL) - adapt if using apt
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - tar
+  when: ansible_os_family == "RedHat"
+
+- name: Create /etc/vector directory
+  ansible.builtin.file:
+    path: "{{ vector_config_path | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download Vector binary (rpm or tarball) to /tmp
+  ansible.builtin.get_url:
+    url: "{{ vector_download_url }}"
+    dest: "/tmp/vector-{{ vector_version }}.rpm"
+    mode: '0644'
+  register: download_result
+  # адаптируй URL для deb/apt систем
+
+- name: Install Vector (rpm)
+  ansible.builtin.yum:
+    name: "/tmp/vector-{{ vector_version }}.rpm"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Deploy vector config
+  ansible.builtin.template:
+    src: "vector.toml.j2"
+    dest: "{{ vector_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart vector
+
+- name: Ensure vector service enabled and started
+  ansible.builtin.service:
+    name: "{{ vector_service_name }}"
+    enabled: yes
+    state: started
+
+
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for vector-role

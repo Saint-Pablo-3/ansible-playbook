@@ -1,0 +1,40 @@
+---
+- name: Install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+  become: true
+
+- name: Ensure lighthouse destination directory exists
+  ansible.builtin.file:
+    path: "{{ lighthouse_dest }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Clone lighthouse repo
+  ansible.builtin.git:
+    repo: "{{ lighthouse_site_repo }}"
+    dest: "{{ lighthouse_dest }}"
+    update: yes
+
+- name: Deploy nginx config for lighthouse
+  ansible.builtin.template:
+    src: "lighthouse.conf.j2"
+    dest: "{{ lighthouse_nginx_conf }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Ensure nginx is started and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+
+
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for lighthouse-role

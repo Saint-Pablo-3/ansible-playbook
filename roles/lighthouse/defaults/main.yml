@@ -1,0 +1,9 @@
+---
+lighthouse_site_repo: "https://github.com/VKCOM/lighthouse.git"
+lighthouse_dest: "/var/www/lighthouse"
+lighthouse_nginx_conf: "/etc/nginx/conf.d/lighthouse.conf"
+
+
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for lighthouse-role

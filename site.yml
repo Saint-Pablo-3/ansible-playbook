@@ -1,0 +1,25 @@
+---
+- name: Provision ClickHouse
+  hosts: clickhouse
+  become: yes
+  roles:
+    - role: clickhouse
+
+- name: Provision Vector
+  hosts: vector_servers
+  become: yes
+  roles:
+    - role: vector
+
+- name: Provision LightHouse (site)
+  hosts: lighthouse_servers
+  become: yes
+  roles:
+    - role: lighthouse
+
+- hosts: all
+  become: yes
+  roles:
+    - clickhouse
+    - vector
+    - lighthouse
