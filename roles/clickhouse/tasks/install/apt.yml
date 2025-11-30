@@ -1,53 +1,47 @@
 ---
-#Main installation actions
-#https://clickhouse.com/docs/en/getting-started/#installation
+# Install ClickHouse for Debian/Ubuntu
 
-- name: Install by APT | Apt-key add repo key
-  apt_key:
-    keyserver: "{{ clickhouse_repo_keyserver }}"
-    id: "{{ clickhouse_repo_key }}"
+- name: Ensure dependencies for repo
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: true
   become: true
   tags: [install]
 
-- name: Install by APT | Remove old repo
-  apt_repository:
-    repo: "{{ clickhouse_repo_old }}"
-    state: absent
+- name: Download ClickHouse GPG key (new official URL)
+  ansible.builtin.command:
+    cmd: >
+      curl -fsSL https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key
+      | gpg --dearmor -o /usr/share/keyrings/clickhouse-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/clickhouse-keyring.gpg
   become: true
-  when: clickhouse_repo_old is defined
   tags: [install]
 
-- name: Install by APT | Repo installation
+- name: Add ClickHouse APT repository
   apt_repository:
-    repo: "{{ clickhouse_repo }}"
+    repo: "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg] https://packages.clickhouse.com/deb stable main"
     state: present
   become: true
   tags: [install]
 
-- name: Install by APT | Package installation
+- name: Update apt cache
   apt:
-    name: "{{ clickhouse_package | map('regex_replace', '$', '=' + clickhouse_version) | list }}"
+    update_cache: true
+  become: true
+  tags: [install]
+
+- name: Install ClickHouse packages
+  apt:
+    name:
+      - clickhouse-server
+      - clickhouse-client
     state: present
-    update_cache: true
   become: true
-  when: clickhouse_version != 'latest'
   tags: [install]
 
-- name: Install by APT | Package installation
-  apt:
-    name: "{{ clickhouse_package }}"
-    state: "{{ clickhouse_version }}"
-    update_cache: true
-  become: true
-  when: clickhouse_version == 'latest'
-  tags: [install]
-
-- name: Hold specified version during APT upgrade | Package installation
-  become: true
-  copy:
-    dest: "/etc/apt/preferences.d/fixed-{{ item }}"
-    content: |
-      Package: {{ item }}
-      Pin: release a=now
-      Pin-Priority: 1001
-  loop: "{{ clickhouse_package }}"

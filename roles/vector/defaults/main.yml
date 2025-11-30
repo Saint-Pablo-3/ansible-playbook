@@ -5,5 +5,4 @@ vector_service_name: "vector"
 vector_config_path: "/etc/vector/vector.toml"
 
 #SPDX-License-Identifier: MIT-0
----
 # defaults file for vector-role

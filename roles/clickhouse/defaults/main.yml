@@ -133,3 +133,14 @@ clickhouse_kafka_config: []
 clickhouse_kafka_topics_config: []
 
 clickhouse_merge_tree_config: []
+
+clickhouse_repo_key_url: "https://packages.clickhouse.com/gpg/KEY.gpg"
+
+clickhouse_repo: "deb https://packages.clickhouse.com/deb/stable/ /"
+
+clickhouse_repo_old: "deb http://repo.clickhouse.com/deb/stable/ main"
+
+clickhouse_package:
+  - clickhouse-server
+  - clickhouse-client
+  - clickhouse-common-static
